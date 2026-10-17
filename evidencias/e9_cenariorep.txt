@@ -1,0 +1,16 @@
+
+=== Repeticoes: cenarios 1 (sem fencing) e 2 (com fencing), 5 vezes cada ===
+fencing=0 rodada 1: RESUMO valor_final=1 tomada_ms=5316
+fencing=0 rodada 2: RESUMO valor_final=1 tomada_ms=5203
+fencing=0 rodada 3: RESUMO valor_final=1 tomada_ms=5210
+fencing=0 rodada 4: RESUMO valor_final=1 tomada_ms=5308
+fencing=0 rodada 5: RESUMO valor_final=1 tomada_ms=5227
+fencing=0: violacoes=5/5  escritas atrasadas rejeitadas=0/5
+fencing=0: tomada da trava apos a ultima renovacao (ms): n=5  media=5252.8  desvio=54.8  (valores: 5316 5203 5210 5308 5227)
+fencing=1 rodada 1: RESUMO valor_final=3 tomada_ms=5136
+fencing=1 rodada 2: RESUMO valor_final=3 tomada_ms=5281
+fencing=1 rodada 3: RESUMO valor_final=3 tomada_ms=5338
+fencing=1 rodada 4: RESUMO valor_final=3 tomada_ms=5323
+fencing=1 rodada 5: RESUMO valor_final=3 tomada_ms=5361
+fencing=1: violacoes=0/5  escritas atrasadas rejeitadas=5/5
+fencing=1: tomada da trava apos a ultima renovacao (ms): n=5  media=5287.8  desvio=89.7  (valores: 5136 5281 5338 5323 5361)

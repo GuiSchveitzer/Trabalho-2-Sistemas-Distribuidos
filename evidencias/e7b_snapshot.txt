@@ -1,0 +1,42 @@
+
+=== E7b - 2026-10-17 12:30:16   recuperacao por snapshot ===
+3
+cluster recriado com ETCD_SNAPSHOT_COUNT=1000 | lider etcd3 | seguidor que vai parar: etcd1
+12:30:25 etcd1 parado; escrevendo 12000 chaves pelo lider...
+12000 puts de 100 bytes em 172.31.0.33: 30.63 s
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+|     ENDPOINT     |        ID        | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS |
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+| 172.31.0.32:2379 | 729febf16625624c |  3.5.17 |  2.2 MB |     false |      false |         2 |      12011 |              12011 |        |
+| 172.31.0.33:2379 | a740cd75718ef0d5 |  3.5.17 |  2.2 MB |      true |      false |         2 |      12011 |              12011 |        |
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+etcd1 recuperado 321 ms apos o processo iniciar (entradas=-1 termo 2 -> 2)
+
+=== logs do LIDER etcd3 (envio do snapshot) ===
+{"level":"info","ts":"2026-10-17T15:31:02.552576Z","caller":"etcdserver/server.go:2186","msg":"sending merged snapshot","from":"a740cd75718ef0d5","to":"f7c63021767e3289","bytes":2200409,"size":"2.2 MB"}
+{"level":"info","ts":"2026-10-17T15:31:02.552663Z","caller":"rafthttp/snapshot_sender.go:84","msg":"sending database snapshot","snapshot-index":12011,"remote-peer-id":"f7c63021767e3289","bytes":2200409,"size":"2.2 MB"}
+{"level":"info","ts":"2026-10-17T15:31:02.559395Z","caller":"etcdserver/snapshot_merge.go:66","msg":"sent database snapshot to writer","bytes":2191360,"size":"2.2 MB"}
+{"level":"info","ts":"2026-10-17T15:31:02.563444Z","caller":"rafthttp/snapshot_sender.go:133","msg":"sent database snapshot","snapshot-index":12011,"remote-peer-id":"f7c63021767e3289","bytes":2200409,"size":"2.2 MB"}
+
+=== logs do SEGUIDOR etcd1 (recebimento e aplicacao) ===
+{"level":"info","ts":"2026-10-17T15:31:02.582979Z","caller":"etcdserver/server.go:1390","msg":"restored alarm store"}
+{"level":"info","ts":"2026-10-17T15:31:02.583010Z","caller":"etcdserver/server.go:1397","msg":"restored auth store"}
+{"level":"info","ts":"2026-10-17T15:31:02.583267Z","caller":"etcdserver/server.go:1409","msg":"restored v2 store"}
+{"level":"info","ts":"2026-10-17T15:31:02.583337Z","caller":"etcdserver/server.go:1417","msg":"restored cluster configuration"}
+{"level":"info","ts":"2026-10-17T15:31:02.584486Z","caller":"etcdserver/server.go:1312","msg":"applied snapshot","current-snapshot-index":12011,"current-applied-index":12011,"incoming-leader-snapshot-index":12011,"incoming-leader-snapshot-term":2}
+
+=== estado final ===
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+|     ENDPOINT     |        ID        | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS |
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+| 172.31.0.31:2379 | f7c63021767e3289 |  3.5.17 |  2.2 MB |     false |      false |         2 |      12012 |              12012 |        |
+| 172.31.0.32:2379 | 729febf16625624c |  3.5.17 |  2.2 MB |     false |      false |         2 |      12012 |              12012 |        |
+| 172.31.0.33:2379 | a740cd75718ef0d5 |  3.5.17 |  2.2 MB |      true |      false |         2 |      12012 |              12012 |        |
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+etcd1 hashkv=1218409969
+etcd2 hashkv=1218409969
+etcd3 hashkv=1218409969
+
+=== restaurando o cluster com snapshot-count padrao (recria os membros) ===
+3
+cluster saudavel, lider etcd3

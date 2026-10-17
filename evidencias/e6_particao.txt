@@ -1,0 +1,56 @@
+
+=== E6 - 2026-10-17 12:27:49   lider = etcd1   maioria = etcd2, etcd3 ===
+
+=== antes da particao ===
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+|     ENDPOINT     |        ID        | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS |
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+| 172.31.0.31:2379 | f7c63021767e3289 |  3.5.17 |   24 MB |      true |      false |         9 |      10551 |              10551 |        |
+| 172.31.0.32:2379 | 729febf16625624c |  3.5.17 |   24 MB |     false |      false |         9 |      10551 |              10551 |        |
+| 172.31.0.33:2379 | a740cd75718ef0d5 |  3.5.17 |   24 MB |     false |      false |         9 |      10551 |              10551 |        |
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+12:27:50 >>> etcd1 (lider) isolado da rede interna
+
+=== durante a particao (endpoint status consultado pela rede de clientes) ===
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+-----------------------+
+|     ENDPOINT     |        ID        | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX |        ERRORS         |
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+-----------------------+
+| 172.31.0.31:2379 | f7c63021767e3289 |  3.5.17 |   24 MB |     false |      false |         9 |      10551 |              10551 | etcdserver: no leader |
+| 172.31.0.32:2379 | 729febf16625624c |  3.5.17 |   24 MB |      true |      false |        10 |      10552 |              10552 |                       |
+| 172.31.0.33:2379 | a740cd75718ef0d5 |  3.5.17 |   24 MB |     false |      false |        10 |      10552 |              10552 |                       |
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+-----------------------+
+
+=== lado MAJORITARIO (etcd2) ===
+  etcd2 put            : OK
+  etcd2 get linearizavel: escrito-pela-maioria
+  etcd2 get serializavel: escrito-pela-maioria
+
+=== lado MINORITARIO (etcd1, antigo lider) - cliente conectado so a ele ===
+  etcd1 put            : Error: context deadline exceeded
+  etcd1 get linearizavel: Error: context deadline exceeded
+  etcd1 get serializavel: antes-da-particao
+
+=== logs do antigo lider durante a particao (check quorum / pre-vote) ===
+{"level":"warn","ts":"2026-10-17T15:27:51.746265Z","logger":"raft","caller":"etcdserver/zap_raft.go:85","msg":"f7c63021767e3289 stepped down to follower since quorum is not active"}
+{"level":"info","ts":"2026-10-17T15:27:51.746307Z","logger":"raft","caller":"etcdserver/zap_raft.go:77","msg":"f7c63021767e3289 became follower at term 9"}
+{"level":"info","ts":"2026-10-17T15:27:51.746316Z","logger":"raft","caller":"etcdserver/zap_raft.go:77","msg":"raft.node: f7c63021767e3289 lost leader f7c63021767e3289 at term 9"}
+{"level":"info","ts":"2026-10-17T15:27:53.245462Z","logger":"raft","caller":"etcdserver/zap_raft.go:77","msg":"f7c63021767e3289 became pre-candidate at term 9"}
+{"level":"info","ts":"2026-10-17T15:27:54.746323Z","logger":"raft","caller":"etcdserver/zap_raft.go:77","msg":"f7c63021767e3289 became pre-candidate at term 9"}
+{"level":"info","ts":"2026-10-17T15:27:56.245738Z","logger":"raft","caller":"etcdserver/zap_raft.go:77","msg":"f7c63021767e3289 became pre-candidate at term 9"}
+{"level":"info","ts":"2026-10-17T15:27:57.745605Z","logger":"raft","caller":"etcdserver/zap_raft.go:77","msg":"f7c63021767e3289 became pre-candidate at term 9"}
+{"level":"info","ts":"2026-10-17T15:27:59.245450Z","logger":"raft","caller":"etcdserver/zap_raft.go:77","msg":"f7c63021767e3289 became pre-candidate at term 9"}
+{"level":"info","ts":"2026-10-17T15:28:00.745834Z","logger":"raft","caller":"etcdserver/zap_raft.go:77","msg":"f7c63021767e3289 became pre-candidate at term 9"}
+
+12:28:02 >>> etcd1 reconectado
+
+=== depois da reconexao (o antigo lider volta como seguidor, com termo atualizado) ===
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+|     ENDPOINT     |        ID        | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS |
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+| 172.31.0.31:2379 | f7c63021767e3289 |  3.5.17 |   24 MB |     false |      false |        10 |      10556 |              10556 |        |
+| 172.31.0.32:2379 | 729febf16625624c |  3.5.17 |   24 MB |      true |      false |        10 |      10556 |              10556 |        |
+| 172.31.0.33:2379 | a740cd75718ef0d5 |  3.5.17 |   24 MB |     false |      false |        10 |      10556 |              10556 |        |
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+etcd1: escrito-pela-maioria
+etcd2: escrito-pela-maioria
+etcd3: escrito-pela-maioria

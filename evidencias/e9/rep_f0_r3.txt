@@ -1,0 +1,36 @@
+12:43:05 >>> docker pause worker1 (congelado dentro da secao critica)
+12:43:11 >>> docker unpause worker1
+
+--- linha do tempo dos workers ---
+12:43:05.335 [worker1] aguardando trava (lease 3641619115011447423, TTL 5s)...
+12:43:05.340 [worker1] TRAVA obtida  token=25214  chave=trava/3289a14a7d879a7f  t_ms=1792251785340
+12:43:05.341 [worker1] li valor=0; processando por 2.0s...
+12:43:05.829 [worker2] aguardando trava (lease 7083213655243092130, TTL 5s)...
+12:43:10.545 [worker2] TRAVA obtida  token=25215  chave=trava/624ca14a7cf5f0a2  t_ms=1792251790545
+12:43:10.546 [worker2] li valor=0; processando por 0.3s...
+12:43:10.847 [worker2] escrevi valor=1 com token=25215: ACEITA
+12:43:10.858 [worker2] trava liberada
+12:43:10.861 [worker2] aguardando trava (lease 7083213655243092139, TTL 5s)...
+12:43:10.865 [worker2] TRAVA obtida  token=25218  chave=trava/624ca14a7cf5f0ab  t_ms=1792251790865
+12:43:10.866 [worker2] li valor=1; processando por 0.3s...
+12:43:11.168 [worker2] escrevi valor=2 com token=25218: ACEITA
+12:43:11.177 [worker2] trava liberada
+12:43:11.181 [worker2] aguardando trava (lease 7083213655243092145, TTL 5s)...
+12:43:11.185 [worker2] TRAVA obtida  token=25220  chave=trava/624ca14a7cf5f0b1  t_ms=1792251791185
+12:43:11.186 [worker2] li valor=2; processando por 0.3s...
+12:43:11.488 [worker2] escrevi valor=3 com token=25220: ACEITA
+12:43:11.499 [worker2] trava liberada
+12:43:11.649 [worker1] escrevi valor=1 com token=25214: ACEITA
+12:43:11.650 [worker1] keepalive: lease 3641619115011447423 NAO existe mais (expirou) -> a trava ja nao e minha! ultima_renovacao_ms=1792251785335
+12:43:11.657 [worker1] trava liberada
+
+--- historico do recurso ---
+12:43:05.096 RESET      fencing=DESLIGADO
+12:43:10.847 ACEITA     worker2 token=25215 valor 0 -> 1
+12:43:11.168 ACEITA     worker2 token=25218 valor 1 -> 2
+12:43:11.487 ACEITA     worker2 token=25220 valor 2 -> 3
+12:43:11.649 ACEITA     worker1 token=25214 valor 3 -> 1   <-- VIOLACAO: valor voltou de 3 para 1 (atualizacao perdida)
+
+valor final = 1   maior_token = 25220   fencing = DESLIGADO
+worker2 obteve a trava 5210 ms apos a ULTIMA renovacao do lease de worker1 (TTL = 5000 ms)
+RESUMO valor_final=1 tomada_ms=5210

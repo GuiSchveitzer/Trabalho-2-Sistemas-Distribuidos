@@ -1,0 +1,38 @@
+
+=== E2 - 2026-10-17 12:25:04 ===
+lider = etcd1 (f7c63021767e3289)   seguidor usado = etcd2 (729febf16625624c)   outro seguidor = etcd3 (a740cd75718ef0d5)
+
+=== RAFT INDEX antes ===
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+|     ENDPOINT     |        ID        | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS |
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+| 172.31.0.31:2379 | f7c63021767e3289 |  3.5.17 |   20 kB |      true |      false |         2 |         17 |                 17 |        |
+| 172.31.0.32:2379 | 729febf16625624c |  3.5.17 |   20 kB |     false |      false |         2 |         17 |                 17 |        |
+| 172.31.0.33:2379 | a740cd75718ef0d5 |  3.5.17 |   20 kB |     false |      false |         2 |         17 |                 17 |        |
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+
+=== put enviado SO ao seguidor etcd2 (endpoint unico), resposta em JSON ===
+{"header":{"cluster_id":6775757553465404157,"member_id":8259579663654150732,"revision":2,"raft_term":2}}
+
+(member_id no cabecalho = quem respondeu ao cliente; raft_term = termo do lider atual)
+
+=== RAFT INDEX depois: os 3 membros avancam juntos (entrada replicada e aplicada) ===
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+|     ENDPOINT     |        ID        | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS |
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+| 172.31.0.31:2379 | f7c63021767e3289 |  3.5.17 |   20 kB |      true |      false |         2 |         18 |                 18 |        |
+| 172.31.0.32:2379 | 729febf16625624c |  3.5.17 |   20 kB |     false |      false |         2 |         18 |                 18 |        |
+| 172.31.0.33:2379 | a740cd75718ef0d5 |  3.5.17 |   20 kB |     false |      false |         2 |         18 |                 18 |        |
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+
+=== leitura em cada membro ===
+etcd1: producao
+etcd2: producao
+etcd3: producao
+
+=== encaminhamento: 200 puts de 10 KB enviados ao seguidor etcd2 ===
+200 puts de 10000 bytes em 172.31.0.32: 1.01 s
+bytes etcd2 -> lider etcd1        : +2037873
+bytes etcd2 -> outro seguidor etcd3: +60
+Conclusao: o seguidor nao replica sozinho; ele repassa a proposta ao lider (~2 MB),
+que a distribui via AppendEntries. Para o outro seguidor so vao respostas/heartbeats.

@@ -1,0 +1,5 @@
+# Scripts precisam de LF para rodar no bash/contêineres mesmo com checkout no Windows
+*.sh   text eol=lf
+*.py   text eol=lf
+*.yml  text eol=lf
+Dockerfile text eol=lf

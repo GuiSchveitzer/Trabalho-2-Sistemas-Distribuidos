@@ -1,0 +1,27 @@
+
+=== E3 - 2026-10-17 12:25:11   lider = etcd1 ===
+
+=== watch no etcd3, put no etcd1, get no etcd2 (endpoints unicos) ===
+put em etcd1: /config/versao = v-122513
+OK
+get em etcd2: v-122513
+notificacao recebida pelo watch no etcd3:
+{"Header":{"cluster_id":6775757553465404157,"member_id":12051858507143508181,"revision":203,"raft_term":2},"Events":[{"kv":{"key":"L2NvbmZpZy92ZXJzYW8=","create_revision":203,"mod_revision":203,"version":1,"value":"di0xMjI1MTM="}}],"CompactRevision":0,"Canceled":false,"Created":false}
+
+=== Latencia de put e get linearizavel (50 operacoes por rodada, 5 rodadas) ===
+etcd1 (LIDER)  put (ms): n=5  media=2.6  desvio=0.0  (valores: 2.62 2.58 2.60 2.61 2.63)
+etcd1 (LIDER)  get (ms): n=5  media=0.9  desvio=0.0  (valores: 0.92 0.94 0.89 0.86 0.91)
+etcd2 (seguidor)  put (ms): n=5  media=3.0  desvio=0.0  (valores: 2.97 2.97 2.93 2.97 2.97)
+etcd2 (seguidor)  get (ms): n=5  media=1.1  desvio=0.0  (valores: 1.10 1.07 1.13 1.11 1.15)
+etcd3 (seguidor)  put (ms): n=5  media=3.0  desvio=0.1  (valores: 3.02 2.94 3.07 3.06 3.06)
+etcd3 (seguidor)  get (ms): n=5  media=1.1  desvio=0.0  (valores: 1.14 1.10 1.17 1.05 1.10)
+
+=== Tempo de propagacao: put no etcd1, leitura serializavel (local) no etcd2 e no etcd3 ===
+etcd1 -> etcd2 (ms): n=5  media=5.3  desvio=3.8  (valores: 12.13 3.85 3.62 3.82 3.31)
+etcd1 -> etcd3 (ms): n=5  media=5.6  desvio=3.1  (valores: 11.02 3.70 3.76 4.25 5.16)
+
+=== etcdctl check perf --load=s (referencia de desempenho, ~60 s) ===
+ 59 / 60   98.33%PASS: Throughput is 151 writes/s
+Slowest request took too long: 0.524125s
+PASS: Stddev is 0.076612s
+FAIL

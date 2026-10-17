@@ -1,0 +1,35 @@
+
+=== E7 - 2026-10-17 12:38:13   recuperacao por log (5 repeticoes) ===
+rodada 1: etcd1 isolado (era lider) por 13042 ms, novo lider etcd2 -> recuperado em 1965 ms (entradas=3001 termo 7 -> 8)
+rodada 2: etcd2 isolado (era lider) por 12919 ms, novo lider etcd1 -> recuperado em 1770 ms (entradas=3001 termo 8 -> 9)
+rodada 3: etcd1 isolado (era lider) por 17760 ms, novo lider etcd2 -> recuperado em 10347 ms (entradas=3001 termo 9 -> 10)
+rodada 4: etcd2 isolado (era lider) por 12806 ms, novo lider etcd1 -> recuperado em 1842 ms (entradas=3001 termo 10 -> 11)
+rodada 5: etcd1 isolado (era lider) por 12791 ms, novo lider etcd2 -> recuperado em 648 ms (entradas=3001 termo 11 -> 12)
+tempo da reconexao ate aplicar todas as entradas (ms): n=5  media=3314.4  desvio=3966.8  (valores: 1965 1770 10347 1842 648)
+
+=== Varredura: duracao da particao x tempo de recuperacao (hipotese do backoff do TCP) ===
+alvo (s)     | particao (ms)  | medido (ms)    | previsto pelo backoff (ms)
+4            | 4582           | 3153           | 1618
+8            | 8410           | 5281           | 4190
+11           | 11384          | 3050           | 1216
+14           | 14386          | 12117          | 11014
+20           | 20394          | 7384           | 5006
+
+=== estado final: mesmo RAFT INDEX e mesmo conteudo nos 3 membros ===
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+|     ENDPOINT     |        ID        | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS |
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+| 172.31.0.31:2379 | f7c63021767e3289 |  3.5.17 |   34 MB |     false |      false |        17 |      25398 |              25398 |        |
+| 172.31.0.32:2379 | 729febf16625624c |  3.5.17 |   34 MB |     false |      false |        17 |      25398 |              25398 |        |
+| 172.31.0.33:2379 | a740cd75718ef0d5 |  3.5.17 |   34 MB |      true |      false |        17 |      25398 |              25398 |        |
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+etcd1: "Count" : 3000 chaves /carga/  hash=2147851718
+etcd2: "Count" : 3000 chaves /carga/  hash=2147851718
+etcd3: "Count" : 3000 chaves /carga/  hash=2147851718
+(hashkv igual = estado identico nas replicas)
+
+=== trecho do log do ultimo membro reconectado ===
+{"level":"info","ts":"2026-10-17T15:41:09.362556Z","logger":"raft","caller":"etcdserver/zap_raft.go:77","msg":"729febf16625624c became follower at term 16"}
+{"level":"info","ts":"2026-10-17T15:41:09.362563Z","logger":"raft","caller":"etcdserver/zap_raft.go:77","msg":"raft.node: 729febf16625624c lost leader 729febf16625624c at term 16"}
+{"level":"info","ts":"2026-10-17T15:41:34.798094Z","logger":"raft","caller":"etcdserver/zap_raft.go:77","msg":"729febf16625624c became follower at term 17"}
+{"level":"info","ts":"2026-10-17T15:41:34.798105Z","logger":"raft","caller":"etcdserver/zap_raft.go:77","msg":"raft.node: 729febf16625624c elected leader a740cd75718ef0d5 at term 17"}

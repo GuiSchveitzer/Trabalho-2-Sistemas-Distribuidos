@@ -1,0 +1,39 @@
+
+=== E1 - 2026-10-17 12:24:59 ===
+
+=== member list ===
++------------------+---------+-------+-------------------------+-------------------------+------------+
+|        ID        | STATUS  | NAME  |       PEER ADDRS        |      CLIENT ADDRS       | IS LEARNER |
++------------------+---------+-------+-------------------------+-------------------------+------------+
+| 729febf16625624c | started | etcd2 | http://172.30.0.32:2380 | http://172.31.0.32:2379 |      false |
+| a740cd75718ef0d5 | started | etcd3 | http://172.30.0.33:2380 | http://172.31.0.33:2379 |      false |
+| f7c63021767e3289 | started | etcd1 | http://172.30.0.31:2380 | http://172.31.0.31:2379 |      false |
++------------------+---------+-------+-------------------------+-------------------------+------------+
+
+=== endpoint status (IS LEADER, RAFT TERM, RAFT INDEX) ===
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+|     ENDPOINT     |        ID        | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS |
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+| 172.31.0.31:2379 | f7c63021767e3289 |  3.5.17 |   20 kB |      true |      false |         2 |         11 |                 11 |        |
+| 172.31.0.32:2379 | 729febf16625624c |  3.5.17 |   20 kB |     false |      false |         2 |         11 |                 11 |        |
+| 172.31.0.33:2379 | a740cd75718ef0d5 |  3.5.17 |   20 kB |     false |      false |         2 |         11 |                 11 |        |
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+
+=== endpoint health ===
+172.31.0.31:2379 is healthy: successfully committed proposal: took = 1.664578ms
+172.31.0.33:2379 is healthy: successfully committed proposal: took = 1.763782ms
+172.31.0.32:2379 is healthy: successfully committed proposal: took = 2.072596ms
+
+=== lider atual ===
+etcd1
+
+=== memoria dos conteineres ===
+NAME      MEM USAGE / LIMIT   CPU %
+etcd1     29.02MiB / 256MiB   0.86%
+etcd2     14.17MiB / 256MiB   0.66%
+etcd3     16.45MiB / 256MiB   0.89%
+
+=== enderecos (rede interna = Raft :2380 | rede clientes = API :2379) ===
+etcd1  t5-etcd_clientes=172.31.0.31  t5-etcd_interna=172.30.0.31  
+etcd2  t5-etcd_clientes=172.31.0.32  t5-etcd_interna=172.30.0.32  
+etcd3  t5-etcd_clientes=172.31.0.33  t5-etcd_interna=172.30.0.33  

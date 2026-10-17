@@ -1,0 +1,33 @@
+
+=== E5 - 2026-10-17 12:26:52 ===
+
+=== Parte 1: queda abrupta do lider (docker kill), 5 repeticoes ===
+rodada 1: lider etcd1 derrubado -> eleicao_ms=868 novo_lider=12051858507143508181 termo=3 (antes 2) | escrita com 2 de 3: OK
+rodada 2: lider etcd3 derrubado -> eleicao_ms=1333 novo_lider=17854010693036946057 termo=4 (antes 3) | escrita com 2 de 3: OK
+rodada 3: lider etcd1 derrubado -> eleicao_ms=1745 novo_lider=12051858507143508181 termo=5 (antes 4) | escrita com 2 de 3: OK
+rodada 4: lider etcd3 derrubado -> eleicao_ms=878 novo_lider=8259579663654150732 termo=6 (antes 5) | escrita com 2 de 3: OK
+rodada 5: lider etcd2 derrubado -> eleicao_ms=1255 novo_lider=12051858507143508181 termo=7 (antes 6) | escrita com 2 de 3: OK
+tempo de eleicao (ms): n=5  media=1215.8  desvio=364.1  (valores: 868 1333 1745 878 1255)
+(election timeout padrao do etcd = 1000 ms + sorteio; heartbeat = 100 ms)
+
+=== Parte 2: docker stop (gracioso) do lider -> transferencia de lideranca ===
+lider = etcd3, termo 7
+{"level":"info","ts":"2026-10-17T15:27:24.754857Z","caller":"etcdserver/server.go:1503","msg":"leadership transfer starting","local-member-id":"a740cd75718ef0d5","current-leader-member-id":"a740cd75718ef0d5","transferee-member-id":"f7c63021767e3289"}
+{"level":"info","ts":"2026-10-17T15:27:24.855981Z","caller":"etcdserver/server.go:1520","msg":"leadership transfer finished","local-member-id":"a740cd75718ef0d5","old-leader-member-id":"a740cd75718ef0d5","new-leader-member-id":"f7c63021767e3289","took":"101.124371ms"}
+novo lider = etcd1, termo 8
+
+=== Parte 3: membros ativos x leitura x escrita (testado sempre no etcd1) ===
+membros ativos   | membro   | leitura linearizavel | leitura serializavel | escrita
+3 (todos)        | etcd1    | OK                   | OK                   | OK
+2 (etcd3 parado) | etcd1    | OK                   | OK                   | OK
+1 (so etcd1)     | etcd1    | FALHA                | OK                   | FALHA
+
+mensagem da escrita sem quorum:
+Error: context deadline exceeded
+endpoint status do etcd1 sozinho (sem lider: termo segue, ninguem e lider):
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+-----------------------+
+|     ENDPOINT     |        ID        | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX |        ERRORS         |
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+-----------------------+
+| 172.31.0.31:2379 | f7c63021767e3289 |  3.5.17 |   24 MB |     false |      false |         8 |      10538 |              10538 | etcdserver: no leader |
++------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+-----------------------+
+cluster restaurado: lider = etcd1

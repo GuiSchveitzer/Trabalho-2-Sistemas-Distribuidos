@@ -1,0 +1,67 @@
+
+=== Cenario 0: dois workers, 5 incrementos cada, sem falhas ===
+12:42:27.604 [worker2] aguardando trava (lease 7083213655243091983, TTL 5s)...
+12:42:27.609 [worker1] aguardando trava (lease 3641619115011447348, TTL 5s)...
+12:42:27.610 [worker2] TRAVA obtida  token=25154  chave=trava/624ca14a7cf5f00f  t_ms=1792251747610
+12:42:27.611 [worker2] li valor=0; processando por 0.3s...
+12:42:27.912 [worker2] escrevi valor=1 com token=25154: ACEITA
+12:42:27.922 [worker1] TRAVA obtida  token=25155  chave=trava/3289a14a7d879a34  t_ms=1792251747922
+12:42:27.922 [worker2] trava liberada
+12:42:27.924 [worker1] li valor=1; processando por 0.3s...
+12:42:27.925 [worker2] aguardando trava (lease 7083213655243091989, TTL 5s)...
+12:42:28.225 [worker1] escrevi valor=2 com token=25155: ACEITA
+12:42:28.234 [worker1] trava liberada
+12:42:28.235 [worker2] TRAVA obtida  token=25157  chave=trava/624ca14a7cf5f015  t_ms=1792251748235
+12:42:28.236 [worker2] li valor=2; processando por 0.3s...
+12:42:28.237 [worker1] aguardando trava (lease 3641619115011447357, TTL 5s)...
+12:42:28.537 [worker2] escrevi valor=3 com token=25157: ACEITA
+12:42:28.549 [worker1] TRAVA obtida  token=25159  chave=trava/3289a14a7d879a3d  t_ms=1792251748549
+12:42:28.549 [worker2] trava liberada
+12:42:28.550 [worker1] li valor=3; processando por 0.3s...
+12:42:28.552 [worker2] aguardando trava (lease 7083213655243091998, TTL 5s)...
+12:42:28.851 [worker1] escrevi valor=4 com token=25159: ACEITA
+12:42:28.861 [worker2] TRAVA obtida  token=25161  chave=trava/624ca14a7cf5f01e  t_ms=1792251748861
+12:42:28.862 [worker1] trava liberada
+12:42:28.862 [worker2] li valor=4; processando por 0.3s...
+12:42:28.865 [worker1] aguardando trava (lease 3641619115011447366, TTL 5s)...
+12:42:29.163 [worker2] escrevi valor=5 com token=25161: ACEITA
+12:42:29.174 [worker1] TRAVA obtida  token=25163  chave=trava/3289a14a7d879a46  t_ms=1792251749174
+12:42:29.174 [worker2] trava liberada
+12:42:29.175 [worker1] li valor=5; processando por 0.3s...
+12:42:29.177 [worker2] aguardando trava (lease 7083213655243092007, TTL 5s)...
+12:42:29.477 [worker1] escrevi valor=6 com token=25163: ACEITA
+12:42:29.487 [worker1] trava liberada
+12:42:29.487 [worker2] TRAVA obtida  token=25165  chave=trava/624ca14a7cf5f027  t_ms=1792251749487
+12:42:29.488 [worker2] li valor=6; processando por 0.3s...
+12:42:29.490 [worker1] aguardando trava (lease 3641619115011447375, TTL 5s)...
+12:42:29.789 [worker2] escrevi valor=7 com token=25165: ACEITA
+12:42:29.798 [worker2] trava liberada
+12:42:29.799 [worker1] TRAVA obtida  token=25167  chave=trava/3289a14a7d879a4f  t_ms=1792251749799
+12:42:29.799 [worker1] li valor=7; processando por 0.3s...
+12:42:29.801 [worker2] aguardando trava (lease 7083213655243092016, TTL 5s)...
+12:42:30.101 [worker1] escrevi valor=8 com token=25167: ACEITA
+12:42:30.111 [worker2] TRAVA obtida  token=25169  chave=trava/624ca14a7cf5f030  t_ms=1792251750111
+12:42:30.112 [worker1] trava liberada
+12:42:30.112 [worker2] li valor=8; processando por 0.3s...
+12:42:30.115 [worker1] aguardando trava (lease 3641619115011447384, TTL 5s)...
+12:42:30.413 [worker2] escrevi valor=9 com token=25169: ACEITA
+12:42:30.422 [worker2] trava liberada
+12:42:30.425 [worker1] TRAVA obtida  token=25171  chave=trava/3289a14a7d879a58  t_ms=1792251750425
+12:42:30.426 [worker1] li valor=9; processando por 0.3s...
+12:42:30.727 [worker1] escrevi valor=10 com token=25171: ACEITA
+12:42:30.736 [worker1] trava liberada
+
+12:42:27.352 RESET      fencing=DESLIGADO
+12:42:27.912 ACEITA     worker2 token=25154 valor 0 -> 1
+12:42:28.225 ACEITA     worker1 token=25155 valor 1 -> 2
+12:42:28.537 ACEITA     worker2 token=25157 valor 2 -> 3
+12:42:28.851 ACEITA     worker1 token=25159 valor 3 -> 4
+12:42:29.163 ACEITA     worker2 token=25161 valor 4 -> 5
+12:42:29.476 ACEITA     worker1 token=25163 valor 5 -> 6
+12:42:29.789 ACEITA     worker2 token=25165 valor 6 -> 7
+12:42:30.100 ACEITA     worker1 token=25167 valor 7 -> 8
+12:42:30.413 ACEITA     worker2 token=25169 valor 8 -> 9
+12:42:30.727 ACEITA     worker1 token=25171 valor 9 -> 10
+
+valor final = 10   maior_token = 25171   fencing = DESLIGADO
+Esperado: valor final 10 (nenhuma atualizacao perdida).

@@ -1,0 +1,36 @@
+
+=== Cenario 3: pausa de 2 s (MENOR que o TTL de 5 s), sem fencing ===
+12:42:46 >>> docker pause worker1 por 2 s
+12:42:48 >>> docker unpause worker1
+
+--- linha do tempo dos workers ---
+12:42:46.147 [worker1] aguardando trava (lease 3641619115011447405, TTL 5s)...
+12:42:46.151 [worker1] TRAVA obtida  token=25190  chave=trava/3289a14a7d879a6d  t_ms=1792251766151
+12:42:46.152 [worker1] li valor=0; processando por 2.0s...
+12:42:46.593 [worker2] aguardando trava (lease 7083213655243092067, TTL 5s)...
+12:42:48.545 [worker1] escrevi valor=1 com token=25190: ACEITA
+12:42:48.555 [worker2] TRAVA obtida  token=25191  chave=trava/624ca14a7cf5f063  t_ms=1792251768555
+12:42:48.556 [worker1] trava liberada
+12:42:48.556 [worker2] li valor=1; processando por 0.3s...
+12:42:48.858 [worker2] escrevi valor=2 com token=25191: ACEITA
+12:42:48.868 [worker2] trava liberada
+12:42:48.871 [worker2] aguardando trava (lease 7083213655243092076, TTL 5s)...
+12:42:48.875 [worker2] TRAVA obtida  token=25194  chave=trava/624ca14a7cf5f06c  t_ms=1792251768875
+12:42:48.876 [worker2] li valor=2; processando por 0.3s...
+12:42:49.177 [worker2] escrevi valor=3 com token=25194: ACEITA
+12:42:49.190 [worker2] trava liberada
+12:42:49.193 [worker2] aguardando trava (lease 7083213655243092082, TTL 5s)...
+12:42:49.199 [worker2] TRAVA obtida  token=25196  chave=trava/624ca14a7cf5f072  t_ms=1792251769199
+12:42:49.199 [worker2] li valor=3; processando por 0.3s...
+12:42:49.501 [worker2] escrevi valor=4 com token=25196: ACEITA
+12:42:49.512 [worker2] trava liberada
+
+--- historico do recurso ---
+12:42:45.916 RESET      fencing=DESLIGADO
+12:42:48.544 ACEITA     worker1 token=25190 valor 0 -> 1
+12:42:48.857 ACEITA     worker2 token=25191 valor 1 -> 2
+12:42:49.177 ACEITA     worker2 token=25194 valor 2 -> 3
+12:42:49.500 ACEITA     worker2 token=25196 valor 3 -> 4
+
+valor final = 4   maior_token = 25196   fencing = DESLIGADO
+Esperado: valor final 4 (1 + 3). O lease nao venceu, entao worker2 esperou worker1 liberar a trava.

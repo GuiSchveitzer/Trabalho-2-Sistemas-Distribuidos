@@ -1,0 +1,19 @@
+
+=== E4 - 2026-10-17 12:26:30   lider = etcd1   seguidor observado = etcd2 ===
+
+=== Parte 1: latencia de get no seguidor etcd2 (50 leituras por rodada, 5 rodadas) ===
+linearizavel (ms): n=5  media=1.2  desvio=0.0  (valores: 1.28 1.18 1.15 1.22 1.20)
+serializavel (ms): n=5  media=0.7  desvio=0.1  (valores: 0.84 0.66 0.66 0.72 0.68)
+(linearizavel consulta o lider via ReadIndex antes de responder; serializavel le o estado local)
+
+=== Parte 2: sequencia temporal com o seguidor etcd2 isolado ===
+12:26:34  apos put v1 (sem particao)   | etcd2 linearizavel: v1-normal                                | serializavel: v1-normal
+12:26:35  >>> etcd2 isolado da rede interna (continua acessivel ao cliente)
+12:26:37  put v2 pelo lider etcd1: OK
+12:26:40  apos put v2 (isolado)        | etcd2 linearizavel: Error: context deadline exceeded         | serializavel: v1-normal
+12:26:40  put v3 pelo lider etcd1: OK
+12:26:44  apos put v3 (isolado)        | etcd2 linearizavel: Error: context deadline exceeded         | serializavel: v1-normal
+12:26:44  lado majoritario             | etcd1 linearizavel: v3-durante-particao                      | serializavel: v3-durante-particao
+12:26:45  lado majoritario             | etcd3 linearizavel: v3-durante-particao                      | serializavel: v3-durante-particao
+12:26:45  >>> etcd2 reconectado
+12:26:50  apos reconexao               | etcd2 linearizavel: v3-durante-particao                      | serializavel: v3-durante-particao

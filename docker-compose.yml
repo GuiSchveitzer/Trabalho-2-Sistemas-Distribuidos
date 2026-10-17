@@ -1,0 +1,97 @@
+# Trabalho 2 - T5: Replicacao de estado / configuracao com etcd (Raft)
+# Rede "interna": trafego Raft entre os membros (porta 2380)
+# Rede "clientes": etcdctl, recurso protegido e workers da enfase B (porta 2379)
+# MACs fixos: o Docker 29 sorteia um MAC novo a cada start e os vizinhos ficam com o ARP antigo
+# em cache, o que deixava o membro reiniciado inacessivel por varios segundos.
+name: t5-etcd
+
+x-etcd: &etcd
+  image: quay.io/coreos/etcd:v3.5.17
+  mem_limit: 256m
+  restart: "no"
+
+# Configuracao comum aos 3 membros (cada membro so muda nome e IPs)
+x-etcd-env: &etcd-env
+  ETCD_DATA_DIR: /etcd-data
+  ETCD_LISTEN_PEER_URLS: http://0.0.0.0:2380
+  ETCD_LISTEN_CLIENT_URLS: http://0.0.0.0:2379
+  ETCD_INITIAL_CLUSTER: etcd1=http://172.30.0.31:2380,etcd2=http://172.30.0.32:2380,etcd3=http://172.30.0.33:2380
+  ETCD_INITIAL_CLUSTER_STATE: new
+  ETCD_INITIAL_CLUSTER_TOKEN: sd-t2
+  # E7: snapshot a cada N entradas do log (padrao do etcd = 100000)
+  ETCD_SNAPSHOT_COUNT: ${SNAPSHOT_COUNT:-100000}
+
+# Python + etcdctl (ver ferramentas/Dockerfile)
+x-python: &python
+  build: ./ferramentas
+  image: t5-cliente
+  mem_limit: 64m
+  volumes: ["./enfase-b:/app/enfase-b:ro", "./ferramentas:/app/ferramentas:ro"]
+
+services:
+  etcd1:
+    <<: *etcd
+    container_name: etcd1
+    environment:
+      <<: *etcd-env
+      ETCD_NAME: etcd1
+      ETCD_INITIAL_ADVERTISE_PEER_URLS: http://172.30.0.31:2380
+      ETCD_ADVERTISE_CLIENT_URLS: http://172.31.0.31:2379
+    networks:
+      interna: {ipv4_address: 172.30.0.31, mac_address: "02:42:ac:1e:00:31"}
+      clientes: {ipv4_address: 172.31.0.31, mac_address: "02:42:ac:1f:00:31"}
+
+  etcd2:
+    <<: *etcd
+    container_name: etcd2
+    environment:
+      <<: *etcd-env
+      ETCD_NAME: etcd2
+      ETCD_INITIAL_ADVERTISE_PEER_URLS: http://172.30.0.32:2380
+      ETCD_ADVERTISE_CLIENT_URLS: http://172.31.0.32:2379
+    networks:
+      interna: {ipv4_address: 172.30.0.32, mac_address: "02:42:ac:1e:00:32"}
+      clientes: {ipv4_address: 172.31.0.32, mac_address: "02:42:ac:1f:00:32"}
+
+  etcd3:
+    <<: *etcd
+    container_name: etcd3
+    environment:
+      <<: *etcd-env
+      ETCD_NAME: etcd3
+      ETCD_INITIAL_ADVERTISE_PEER_URLS: http://172.30.0.33:2380
+      ETCD_ADVERTISE_CLIENT_URLS: http://172.31.0.33:2379
+    networks:
+      interna: {ipv4_address: 172.30.0.33, mac_address: "02:42:ac:1e:00:33"}
+      clientes: {ipv4_address: 172.31.0.33, mac_address: "02:42:ac:1f:00:33"}
+
+  # Cliente Python para medicoes (latencia, propagacao, metricas) sem o custo do docker exec
+  cliente:
+    <<: *python
+    container_name: cliente
+    command: ["sleep", "infinity"]
+    networks: {clientes: {ipv4_address: 172.31.0.100}}
+
+  # ---- Enfase B: recurso compartilhado protegido por trava do etcd ----
+  recurso:
+    <<: *python
+    container_name: recurso
+    command: ["python", "/app/enfase-b/recurso.py"]
+    networks: {clientes: {ipv4_address: 172.31.0.50}}
+
+  # Os workers ficam ociosos; os scripts da enfase B disparam o worker.py com docker exec
+  worker1:
+    <<: *python
+    container_name: worker1
+    command: ["sleep", "infinity"]
+    networks: {clientes: {ipv4_address: 172.31.0.101}}
+
+  worker2:
+    <<: *python
+    container_name: worker2
+    command: ["sleep", "infinity"]
+    networks: {clientes: {ipv4_address: 172.31.0.102}}
+
+networks:
+  interna: {ipam: {config: [{subnet: 172.30.0.0/24}]}}
+  clientes: {ipam: {config: [{subnet: 172.31.0.0/24}]}}

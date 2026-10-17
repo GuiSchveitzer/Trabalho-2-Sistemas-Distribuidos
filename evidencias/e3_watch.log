@@ -1,0 +1,1 @@
+{"Header":{"cluster_id":6775757553465404157,"member_id":12051858507143508181,"revision":203,"raft_term":2},"Events":[{"kv":{"key":"L2NvbmZpZy92ZXJzYW8=","create_revision":203,"mod_revision":203,"version":1,"value":"di0xMjI1MTM="}}],"CompactRevision":0,"Canceled":false,"Created":false}

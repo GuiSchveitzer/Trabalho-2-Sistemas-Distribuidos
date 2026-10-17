@@ -1,0 +1,36 @@
+
+=== E8 - 2026-10-17 12:31:08 ===
+
+=== Parte 1: termos e revisoes ao longo de escritas e falhas ===
+evento                               | lider   | termo | revisao
+estado inicial                       | etcd3   | 2     | 1
+put /e8=a                            | etcd3   | 2     | 2
+put /e8=b (via outro membro)         | etcd3   | 2     | 3
+lider etcd3 derrubado (docker kill)  | etcd1   | 3     | 3
+put /e8=c (sem o antigo lider)       | etcd1   | 3     | 4
+etcd3 volta (seguidor)               | etcd1   | 3     | 4
+lider etcd1 derrubado (docker kill)  | etcd3   | 4     | 4
+put /e8=d                            | etcd3   | 4     | 5
+cluster completo de novo             | etcd3   | 4     | 5
+historico de versoes da chave /e8 (cada put = nova revisao global):
+"CreateRevision" : 2
+"ModRevision" : 5
+"Version" : 4
+
+=== Parte 2: exclusao mutua com etcdctl lock (TTL padrao da sessao = 10 s), 5 repeticoes ===
+rodada 1: PEGOU f2377b45f6cb chave=trava/624ca14a7cf5be17 rev=6 | worker1 morto -> PEGOU 4e19ab83289f chave=trava/70d5a14a7d453a0a rev=8 apos 8022 ms
+rodada 2: PEGOU f2377b45f6cb chave=trava/70d5a14a7d453a0f rev=10 | worker1 morto -> PEGOU 4e19ab83289f chave=trava/624ca14a7cf5be1c rev=12 apos 7723 ms
+rodada 3: PEGOU f2377b45f6cb chave=trava/624ca14a7cf5be20 rev=14 | worker1 morto -> PEGOU 4e19ab83289f chave=trava/624ca14a7cf5be22 rev=16 apos 8304 ms
+rodada 4: PEGOU f2377b45f6cb chave=trava/3289a14a7d87690c rev=18 | worker1 morto -> PEGOU 4e19ab83289f chave=trava/70d5a14a7d453a1a rev=20 apos 7846 ms
+rodada 5: PEGOU f2377b45f6cb chave=trava/3289a14a7d876910 rev=22 | worker1 morto -> PEGOU 4e19ab83289f chave=trava/3289a14a7d876912 rev=24 apos 8179 ms
+tempo ate o outro worker assumir a trava (ms): n=5  media=8014.8  desvio=236.8  (valores: 8022 7723 8304 7846 8179)
+(rev = ETCD_LOCK_REV, revisao da chave da trava: cresce a cada novo detentor -> serve de fencing token)
+
+=== Parte 3: eleicao de lider de aplicacao com etcdctl elect (sessao com TTL padrao de 60 s) ===
+12:32:44 candidatos: worker1 (primeiro, lider) e worker2; docker kill worker1
+12:33:41 worker2 virou lider ~57 s apos a queda (quando o lease de 60 s venceu)
+o que o observador (elect -l) viu, em ordem (chave do candidato e proposta):
+eleicao-1792251161/624ca14a7cf5be29
+worker1-e-o-lider
+eleicao-1792251161/624ca14a7cf5be2c
+worker2-e-o-lider
