@@ -25,12 +25,12 @@ print(int(datetime.fromisoformat('$1'[:26]).replace(tzinfo=timezone.utc).timesta
   py carga "$(ip_de "$L")" 12000 100
   DE=$L ctl_todos endpoint status -w table 2>&1 | grep -v "deadline"
 
-  : > /tmp/e7b_med
-  py alcanca "$(ip_de "$F")" "$(ip_de "$L")" > /tmp/e7b_med &
+  : > "$TRAB/e7b_med"
+  py alcanca "$(ip_de "$F")" "$(ip_de "$L")" > "$TRAB/e7b_med" &
   sleep 1
   docker start "etcd$F" >/dev/null
   wait
-  res=$(grep t_fim_ms /tmp/e7b_med)
+  res=$(grep t_fim_ms "$TRAB/e7b_med")
   t_fim=$(echo "$res" | sed 's/t_fim_ms=\([0-9]*\).*/\1/')
   t_ini=$(epoch_ms "$(docker inspect -f '{{.State.StartedAt}}' "etcd$F")")
   echo "etcd$F recuperado $(( t_fim - t_ini )) ms apos o processo iniciar (${res#* })"

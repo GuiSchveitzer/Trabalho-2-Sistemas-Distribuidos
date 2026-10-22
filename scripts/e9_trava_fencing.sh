@@ -85,18 +85,18 @@ cenario_pausa_curta() {
 repeticoes() {
   titulo "Repeticoes: cenarios 1 (sem fencing) e 2 (com fencing), 5 vezes cada"
   for f in 0 1; do
-    : > /tmp/e9_tomada; viol=0; rej=0
+    : > "$TRAB/e9_tomada"; viol=0; rej=0
     for r in 1 2 3 4 5; do
       saida=$(cenario_pausa "$f" "rep_f${f}_r$r" 2>&1)
       echo "$saida" > "$EVID/e9/rep_f${f}_r$r.txt"   # prova detalhada de cada repeticao
       resumo=$(echo "$saida" | grep RESUMO)
-      echo "$resumo" | grep -o "tomada_ms=[0-9]*" | cut -d= -f2 >> /tmp/e9_tomada
+      echo "$resumo" | grep -o "tomada_ms=[0-9]*" | cut -d= -f2 >> "$TRAB/e9_tomada"
       echo "$saida" | grep -q "VIOLACAO" && viol=$((viol + 1))
       echo "$saida" | grep -q "REJEITADA  worker1" && rej=$((rej + 1))
       echo "fencing=$f rodada $r: $resumo"
     done
     echo "fencing=$f: violacoes=$viol/5  escritas atrasadas rejeitadas=$rej/5"
-    echo "fencing=$f: tomada da trava apos a ultima renovacao (ms): $(estatisticas < /tmp/e9_tomada)"
+    echo "fencing=$f: tomada da trava apos a ultima renovacao (ms): $(estatisticas < "$TRAB/e9_tomada")"
   done
 }
 
