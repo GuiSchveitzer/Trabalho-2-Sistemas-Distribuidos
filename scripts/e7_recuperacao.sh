@@ -7,7 +7,7 @@ SAIDA="$EVID/e7_recuperacao.txt"
 
 {
   titulo "E7 - $(date '+%Y-%m-%d %H:%M:%S')   recuperacao por log (5 repeticoes)"
-  : > /tmp/e7_alc
+  : > "$TRAB/e7_alc"
   for r in 1 2 3 4 5; do
     espera_saudavel; sleep 2
     L=$(lider)
@@ -16,17 +16,17 @@ SAIDA="$EVID/e7_recuperacao.txt"
     N=$(DE=$(( L % 3 + 1 )) lider)
     py carga "$(ip_de "$N")" 3000 1000 >/dev/null
 
-    : > /tmp/e7_med
-    py alcanca "$(ip_de "$L")" "$(ip_de "$N")" > /tmp/e7_med &
-    espera_texto /tmp/e7_med pronto || continue
+    : > "$TRAB/e7_med"
+    py alcanca "$(ip_de "$L")" "$(ip_de "$N")" > "$TRAB/e7_med" &
+    espera_texto "$TRAB/e7_med" pronto || continue
     t_religa=$(reconecta "$L")
     wait
-    res=$(grep t_fim_ms /tmp/e7_med)
+    res=$(grep t_fim_ms "$TRAB/e7_med")
     t_fim=$(echo "$res" | sed 's/t_fim_ms=\([0-9]*\).*/\1/')
-    echo $(( t_fim - t_religa )) >> /tmp/e7_alc
+    echo $(( t_fim - t_religa )) >> "$TRAB/e7_alc"
     echo "rodada $r: etcd$L isolado (era lider) por $(( t_religa - t_isola )) ms, novo lider etcd$N -> recuperado em $(( t_fim - t_religa )) ms (${res#* })"
   done
-  echo "tempo da reconexao ate aplicar todas as entradas (ms): $(estatisticas < /tmp/e7_alc)"
+  echo "tempo da reconexao ate aplicar todas as entradas (ms): $(estatisticas < "$TRAB/e7_alc")"
 
   # Durante a particao a conexao TCP entre os pares nao cai (fica meio aberta); o lider continua
   # enviando e o TCP retransmite com backoff exponencial (RTO minimo de 200 ms no Linux:
@@ -41,14 +41,14 @@ SAIDA="$EVID/e7_recuperacao.txt"
     sleep 3
     N=$(DE=$(( L % 3 + 1 )) lider)
     py carga "$(ip_de "$N")" 200 100 >/dev/null
-    : > /tmp/e7_med
-    py alcanca "$(ip_de "$L")" "$(ip_de "$N")" > /tmp/e7_med &
-    espera_texto /tmp/e7_med pronto || continue
+    : > "$TRAB/e7_med"
+    py alcanca "$(ip_de "$L")" "$(ip_de "$N")" > "$TRAB/e7_med" &
+    espera_texto "$TRAB/e7_med" pronto || continue
     resta=$(( D * 1000 - ($(date +%s%3N) - h0) ))
     [ "$resta" -gt 0 ] && sleep "$(awk "BEGIN { print $resta / 1000 }")"
     t_religa=$(reconecta "$L")
     wait
-    t_fim=$(grep t_fim_ms /tmp/e7_med | sed 's/t_fim_ms=\([0-9]*\).*/\1/')
+    t_fim=$(grep t_fim_ms "$TRAB/e7_med" | sed 's/t_fim_ms=\([0-9]*\).*/\1/')
     dur=$(( t_religa - t_isola ))
     prev=$(awk -v d="$dur" 'BEGIN { split("200 600 1400 3000 6200 12600 25400 51000", s, " ");
                                     for (i = 1; i <= 8; i++) if (s[i] > d) { print s[i] - d; exit } }')

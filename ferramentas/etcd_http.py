@@ -123,7 +123,11 @@ def alcanca(ip_membro, ip_ref):
         if atual and atual[1] >= alvo:
             break
         time.sleep(0.005)
-    print(f"t_fim_ms={int(time.time() * 1000)} entradas={alvo - inicial[1]} "
+    # entradas = quantas faltavam na primeira resposta do membro; 0 quando ele ja tinha alcancado a
+    # referencia nessa resposta (ex.: snapshot aplicado durante a inicializacao, no E7b)
+    faltavam = max(alvo - inicial[1], 0)
+    aviso = " (ja alcancado na primeira consulta)" if faltavam == 0 else ""
+    print(f"t_fim_ms={int(time.time() * 1000)} entradas={faltavam}{aviso} "
           f"termo {inicial[0]} -> {atual[0]}", flush=True)
 
 

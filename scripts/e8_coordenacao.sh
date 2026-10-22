@@ -49,7 +49,7 @@ SEGURA='echo "PEGOU $(hostname) chave=$ETCD_LOCK_KEY rev=$ETCD_LOCK_REV t_ms=$(p
   ctl 1 get /e8 -w fields | grep -E "CreateRevision|ModRevision|Version"
 
   titulo "Parte 2: exclusao mutua com etcdctl lock (TTL padrao da sessao = 10 s), 5 repeticoes"
-  : > /tmp/e8_lock
+  : > "$TRAB/e8_lock"
   for r in 1 2 3 4 5; do
     docker start worker1 worker2 >/dev/null
     : > "$LOGS/lock_w1.log"; : > "$LOGS/lock_w2.log"
@@ -62,14 +62,14 @@ SEGURA='echo "PEGOU $(hostname) chave=$ETCD_LOCK_KEY rev=$ETCD_LOCK_REV t_ms=$(p
     espera_texto "$LOGS/lock_w2.log" PEGOU || continue
     t_kill=$(epoch_ms "$(docker inspect -f '{{.State.FinishedAt}}' worker1)")
     t_pegou=$(grep PEGOU "$LOGS/lock_w2.log" | sed 's/.*t_ms=//')
-    echo $(( t_pegou - t_kill )) >> /tmp/e8_lock
+    echo $(( t_pegou - t_kill )) >> "$TRAB/e8_lock"
     echo "rodada $r: $(cut -d' ' -f1-4 "$LOGS/lock_w1.log") | worker1 morto -> $(cut -d' ' -f1-4 "$LOGS/lock_w2.log") apos $(( t_pegou - t_kill )) ms"
     # Encerra o comando que segura a trava; o etcdctl lock entao libera a trava e sai
     # (um "pkill etcdctl" nao basta: o etcdctl continua esperando o filho terminar)
     docker exec worker2 pkill -f "sleep 3600"
     wait 2>/dev/null
   done
-  echo "tempo ate o outro worker assumir a trava (ms): $(estatisticas < /tmp/e8_lock)"
+  echo "tempo ate o outro worker assumir a trava (ms): $(estatisticas < "$TRAB/e8_lock")"
   echo "(rev = ETCD_LOCK_REV, revisao da chave da trava: cresce a cada novo detentor -> serve de fencing token)"
 
   titulo "Parte 3: eleicao de lider de aplicacao com etcdctl elect (sessao com TTL padrao de 60 s)"

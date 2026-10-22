@@ -19,22 +19,22 @@ testa_membro() {
   titulo "E5 - $(date '+%Y-%m-%d %H:%M:%S')"
 
   titulo "Parte 1: queda abrupta do lider (docker kill), 5 repeticoes"
-  : > /tmp/e5_eleicao
+  : > "$TRAB/e5_eleicao"
   for r in 1 2 3 4 5; do
     espera_saudavel; sleep 3
     L=$(lider); S=(); for n in 1 2 3; do [ "$n" != "$L" ] && S+=("$n"); done
-    : > /tmp/e5_med   # zera para nao achar o "pronto" da rodada anterior
-    py eleicao "$(ip_de "$L")" "$(ip_de "${S[0]}")" "$(ip_de "${S[1]}")" > /tmp/e5_med &
-    espera_texto /tmp/e5_med pronto || continue
+    : > "$TRAB/e5_med"   # zera para nao achar o "pronto" da rodada anterior
+    py eleicao "$(ip_de "$L")" "$(ip_de "${S[0]}")" "$(ip_de "${S[1]}")" > "$TRAB/e5_med" &
+    espera_texto "$TRAB/e5_med" pronto || continue
     docker kill "etcd$L" >/dev/null
     wait
-    res=$(grep eleicao_ms /tmp/e5_med)
-    [ -n "$res" ] && echo "${res#eleicao_ms=}" | awk '{ print $1 }' >> /tmp/e5_eleicao
+    res=$(grep eleicao_ms "$TRAB/e5_med")
+    [ -n "$res" ] && echo "${res#eleicao_ms=}" | awk '{ print $1 }' >> "$TRAB/e5_eleicao"
     escrita=$(ctl "${S[0]}" --command-timeout=3s put /e5/apos_queda "r$r" 2>&1)
     echo "rodada $r: lider etcd$L derrubado -> $res | escrita com 2 de 3: $escrita"
     docker start "etcd$L" >/dev/null
   done
-  echo "tempo de eleicao (ms): $(estatisticas < /tmp/e5_eleicao)"
+  echo "tempo de eleicao (ms): $(estatisticas < "$TRAB/e5_eleicao")"
   echo "(election timeout padrao do etcd = 1000 ms + sorteio; heartbeat = 100 ms)"
 
   titulo "Parte 2: docker stop (gracioso) do lider -> transferencia de lideranca"

@@ -20,13 +20,13 @@ le_nos_dois_modos() {
   titulo "E4 - $(date '+%Y-%m-%d %H:%M:%S')   lider = etcd$L   seguidor observado = etcd$F"
 
   titulo "Parte 1: latencia de get no seguidor etcd$F (50 leituras por rodada, 5 rodadas)"
-  : > /tmp/e4_l; : > /tmp/e4_s
+  : > "$TRAB/e4_l"; : > "$TRAB/e4_s"
   for r in 1 2 3 4 5; do
-    linha=$(py latencia "$(ip_de "$F")" 50);   echo "${linha#*get_ms=}" >> /tmp/e4_l
-    linha=$(py latencia "$(ip_de "$F")" 50 s); echo "${linha#*get_ms=}" >> /tmp/e4_s
+    linha=$(py latencia "$(ip_de "$F")" 50);   echo "${linha#*get_ms=}" >> "$TRAB/e4_l"
+    linha=$(py latencia "$(ip_de "$F")" 50 s); echo "${linha#*get_ms=}" >> "$TRAB/e4_s"
   done
-  echo "linearizavel (ms): $(estatisticas < /tmp/e4_l)"
-  echo "serializavel (ms): $(estatisticas < /tmp/e4_s)"
+  echo "linearizavel (ms): $(estatisticas < "$TRAB/e4_l")"
+  echo "serializavel (ms): $(estatisticas < "$TRAB/e4_s")"
   echo "(linearizavel consulta o lider via ReadIndex antes de responder; serializavel le o estado local)"
 
   titulo "Parte 2: sequencia temporal com o seguidor etcd$F isolado"

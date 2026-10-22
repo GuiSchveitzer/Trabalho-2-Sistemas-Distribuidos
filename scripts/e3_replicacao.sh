@@ -21,21 +21,21 @@ SAIDA="$EVID/e3_replicacao.txt"
 
   titulo "Latencia de put e get linearizavel (50 operacoes por rodada, 5 rodadas)"
   for alvo in 1 2 3; do
-    : > /tmp/e3_put; : > /tmp/e3_get
+    : > "$TRAB/e3_put"; : > "$TRAB/e3_get"
     for r in 1 2 3 4 5; do
       linha=$(py latencia "$(ip_de "$alvo")" 50)
-      echo "${linha#*put_ms=}" | awk '{ print $1 }' >> /tmp/e3_put
-      echo "${linha#*get_ms=}" >> /tmp/e3_get
+      echo "${linha#*put_ms=}" | awk '{ print $1 }' >> "$TRAB/e3_put"
+      echo "${linha#*get_ms=}" >> "$TRAB/e3_get"
     done
     papel="seguidor"; [ "$alvo" = "$(lider)" ] && papel="LIDER"
-    echo "etcd$alvo ($papel)  put (ms): $(estatisticas < /tmp/e3_put)"
-    echo "etcd$alvo ($papel)  get (ms): $(estatisticas < /tmp/e3_get)"
+    echo "etcd$alvo ($papel)  put (ms): $(estatisticas < "$TRAB/e3_put")"
+    echo "etcd$alvo ($papel)  get (ms): $(estatisticas < "$TRAB/e3_get")"
   done
 
   titulo "Tempo de propagacao: put no etcd1, leitura serializavel (local) no etcd2 e no etcd3"
   for leitor in 2 3; do
-    py propagacao "$(ip_de 1)" "$(ip_de "$leitor")" 5 > /tmp/e3_prop
-    echo "etcd1 -> etcd$leitor (ms): $(estatisticas < /tmp/e3_prop)"
+    py propagacao "$(ip_de 1)" "$(ip_de "$leitor")" 5 > "$TRAB/e3_prop"
+    echo "etcd1 -> etcd$leitor (ms): $(estatisticas < "$TRAB/e3_prop")"
   done
 
   titulo "etcdctl check perf --load=s (referencia de desempenho, ~60 s)"

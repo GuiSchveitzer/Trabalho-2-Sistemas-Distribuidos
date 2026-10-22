@@ -7,7 +7,7 @@ export MSYS_NO_PATHCONV=1
 
 RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 EVID="${EVID:-$RAIZ/evidencias}"        # pode ser trocado (ex.: EVID=/tmp/teste) para testar sem sobrescrever
-# Arquivos de trabalho (logs brutos dos workers): so servem durante a execucao,
+# Arquivos de trabalho (logs brutos dos workers e valores intermediarios das medicoes): so servem durante a execucao,
 # o conteudo deles vai para as evidencias em evidencias/
 TRAB="${TMPDIR:-/tmp}/t5-etcd"
 mkdir -p "$EVID" "$TRAB"

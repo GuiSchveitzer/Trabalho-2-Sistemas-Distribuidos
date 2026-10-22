@@ -42,7 +42,7 @@ Para recriar tudo do zero (apaga os dados do etcd): `docker compose down && dock
 
 Cada script imprime o resultado e salva a evidência em `evidencias/`. Rode a partir da raiz do repositório.
 
-Para recriar o ambiente do zero e rodar **todos** os experimentos em sequência (~15 min):
+Para recriar o ambiente do zero e rodar **todos** os experimentos em sequência (~20 min):
 
 ```bash
 bash scripts/executar_todos.sh
@@ -70,7 +70,7 @@ Em vez de `docker network disconnect`, o script derruba a interface da rede inte
 Arquivos em [enfase-b/](enfase-b/):
 
 - [recurso.py](enfase-b/recurso.py): servidor HTTP com um contador. Detecta e marca a regressão do valor (atualização perdida). Com o fencing ligado, rejeita (HTTP 409) escritas cujo token seja **menor** que o maior token já visto.
-- [worker.py](enfase-b/worker.py): pega a trava `trava` no etcd (API HTTP `/v3/lock/lock`) com um lease de TTL 5 s renovado por uma thread de keepalive. Dentro da seção crítica, lê o contador, "processa" e escreve valor+1. O **fencing token** é a `create_revision` da chave da trava, que é global e só cresce no etcd.
+- [worker.py](enfase-b/worker.py): pega a trava `trava` no etcd (API HTTP `/v3/lock/lock`) com um lease de TTL 5 s renovado por uma thread de keepalive. Dentro da seção crítica, lê o contador, "processa" e escreve valor+1. O **fencing token** é a `create_revision` da chave da trava, que é global e só cresce no etcd. A trava é a mesma do `etcdctl lock` (receita do pacote `concurrency`: chave `trava/<lease>` e fila pela `create_revision`), chamada pelo serviço `Lock` da API v3 para que o worker controle o próprio lease e leia a revisão; o E8 usa o `etcdctl lock` diretamente.
 
 Cenários do `e9_trava_fencing.sh`:
 
@@ -98,5 +98,5 @@ ferramentas/             Dockerfile da imagem cliente, etcd_http.py (medições)
 enfase-b/                recurso.py e worker.py (ênfase B)
 scripts/                 comum.sh (funções compartilhadas), um script por experimento e executar_todos.sh
 evidencias/              saídas geradas pelos scripts (usadas no relatório)
-relatorio/               relatório em Word e figuras (diagramas próprios)
+relatorio/               relatório em Word e figuras (diagramas próprios; gerar_figuras.py refaz as que dependem das evidências)
 ```
