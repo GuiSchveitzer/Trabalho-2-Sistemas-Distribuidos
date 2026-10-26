@@ -1,0 +1,16 @@
+
+=== Medicoes extras - 2026-10-26 12:19:31 ===
+
+=== Parte A: propagacao put no etcd1 -> leitura serializavel (1 aquecimento descartado + 5 medicoes) ===
+aquecimento descartado (ms): 19.88
+etcd1 -> etcd2 (ms): n=5  media=5.3  desvio=1.2  (valores: 6.92 6.10 4.57 4.64 4.18)
+aquecimento descartado (ms): 12.58
+etcd1 -> etcd3 (ms): n=5  media=4.8  desvio=1.0  (valores: 4.43 3.99 4.99 4.20 6.47)
+
+=== Parte B: eleicao de lider de aplicacao (API de eleicao, lease TTL 10 s), 5 repeticoes ===
+rodada 1: LIDER worker1 rev=25442 | worker1 morto -> LIDER worker2 rev=25443 apos 7712 ms
+rodada 2: LIDER worker1 rev=25445 | worker1 morto -> LIDER worker2 rev=25446 apos 7785 ms
+rodada 3: LIDER worker1 rev=25449 | worker1 morto -> LIDER worker2 rev=25450 apos 7679 ms
+rodada 4: LIDER worker1 rev=25453 | worker1 morto -> LIDER worker2 rev=25454 apos 7770 ms
+rodada 5: LIDER worker1 rev=25457 | worker1 morto -> LIDER worker2 rev=25458 apos 7801 ms
+tempo ate o outro candidato assumir a lideranca (ms): n=5  media=7749.4  desvio=51.7  (valores: 7712 7785 7679 7770 7801)

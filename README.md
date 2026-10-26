@@ -59,6 +59,7 @@ bash scripts/executar_todos.sh
 | E7 | `scripts/e7_recuperacao.sh` | membro isolado volta e alcança o líder pelo log (5×); varredura duração da partição × recuperação; hashkv igual nos 3. `python ferramentas/ajuste_rto.py` ajusta o modelo de backoff do TCP aos resultados |
 | E7b | `scripts/e7b_snapshot.sh` | recuperação por **snapshot** (`--snapshot-count=1000`). **Recria o cluster.** |
 | E8 | `scripts/e8_coordenacao.sh` | termos × revisões; `etcdctl lock` com tomada após queda (5×); `etcdctl elect` |
+| E3/E8 | `scripts/e8b_medicoes_extras.sh` | propagação com 1 aquecimento descartado + 5 medições; eleição de líder de aplicação pela API de eleição (`enfase-b/candidato.py`, lease de 10 s, 5×) |
 | E9 | `scripts/e9_trava_fencing.sh` | **Ênfase B**: violação da exclusão mútua com `docker pause`, correção com fencing token, caso limite (pausa < TTL) e 5 repetições |
 
 ### Como as partições são feitas (E4, E6, E7)
